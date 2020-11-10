@@ -1,30 +1,19 @@
 <?php
 
-// X se usa para marcar que son headers no estándares
-if(
-    !array_key_exists("HTTP_X_HASH", $_SERVER) ||
-    !array_key_exists("HTTP_X_TIMESTAMP", $_SERVER) ||
-    !array_key_exists("HTTP_X_UID", $_SERVER)
-) die;
+if( !array_key_exists("HTTP_X_TOKEN", $_SERVER) ) die;
 
-list( $hash, $uid, $timestamp) = [
-    $_SERVER["HTTP_X_HASH"],
-    $_SERVER["HTTP_X_UID"],
-    $_SERVER["HTTP_X_TIMESTAMP"],
-];
+$url = "http://localhost:8001";
+$ch = curl_init( $url );
 
-$secret = "Sh!! No se lo cuentes a nadie!";
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    "X-Token: {$_SERVER['HTTP_X_TOKEN']}"
+]);
 
-$newHash = sha1($uid.$timestamp.$secret);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
-if ( $newHash !== $hash ) die;
+$ret = curl_exec( $ch );
 
-// Definimos los recursos disponibles
-$allowedResourceTypes = [
-    "books",
-    "authors",
-    "genres"
-];
+if ($ret !== "true") die;
 
 // Validamos que el recurso esté disponible
 $resourceType = $_GET["resource_type"];
